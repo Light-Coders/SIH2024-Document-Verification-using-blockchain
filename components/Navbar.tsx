@@ -19,13 +19,16 @@ const providerOptions = {
 	}
 };
 
-export default function Navbar() {
+type NavbarProps = {
+	contract: ethers.Co
+}
+
+export default function Navbar({ contract, setContract }) {
 	const [opened, { toggle }] = useDisclosure(false)
 	const router = useRouter()
 	const [web3Modal, setWeb3Modal] = useState<Web3Modal | null>(null)
 	const [address, setAddress] = useState<string | null>(null)
 	const [isConnecting, setIsConnecting] = useState(false)
-	const { contract, setContract } = useContract()
 
 	const [provider, setProvider] = useState<Web3Provider | null>(null);
 	const [signer, setSigner] = useState<ethers.Signer | null>(null);
