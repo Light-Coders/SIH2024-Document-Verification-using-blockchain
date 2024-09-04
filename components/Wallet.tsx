@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import Web3Modal from 'web3modal';
 import { ethers } from 'ethers';
 import { Web3Provider } from "@ethersproject/providers";
 import CoinbaseWalletSDK from '@coinbase/wallet-sdk';
 import { Button } from '@mantine/core';
 import { Loading } from './Loading';
-import { useContract } from '../contexts/ContractContext';
+
 
 const providerOptions = {
 	walletlink: {
@@ -17,12 +17,18 @@ const providerOptions = {
 	}
 };
 
-export default function Wallet() {
+type WalletProps = {
+	contract?: ethers.Contract | null
+	setContract: Dispatch<SetStateAction<ethers.Contract | null>>
+}
+
+export default function Wallet({ contract, setContract }: WalletProps) {
 	const [provider, setProvider] = useState<Web3Provider | null>(null);
+	// const [contract, setContract] = useState<ethers.Contract | null>(null);
 	const [signer, setSigner] = useState<ethers.Signer | null>(null);
 	const [connected, setConnected] = useState(false);
+	const [connectedAddress, setConnectedAddress] = useState('');
 	const [loading, setLoading] = useState(false);
-	const { contract, setContract, connectedAddress, setConnectedAddress } = useContract();
 
 	const contractAddress = "0x058494E08CD9ED411025D83E7Bc94B3a8b9FFec6";
 
@@ -33,7 +39,11 @@ export default function Wallet() {
 				setContract(Contract);
 			});
 		}
-	}, [signer, setContract]);
+	}, [signer]);
+
+	useEffect(() => {
+		console.log("Updated contract state:", contract);
+	}, [contract]);
 
 	const handleConnect = async () => {
 		setLoading(true);
@@ -46,7 +56,7 @@ export default function Wallet() {
 			const web3ModalProvider = new Web3Provider(web3ModalInstance);
 			const signer = web3ModalProvider.getSigner();
 			setProvider(web3ModalProvider);
-			setSigner(signer);
+			setSigner(signer as any);
 			setConnected(true);
 			const address = await signer.getAddress();
 			setConnectedAddress(address);
@@ -60,7 +70,7 @@ export default function Wallet() {
 		setProvider(null);
 		setSigner(null);
 		setConnected(false);
-		setConnectedAddress(null);
+		setConnectedAddress('');
 		setContract(null);
 	}
 

@@ -4,6 +4,7 @@ import React, { Dispatch, SetStateAction, useState } from 'react'
 import Navbar from '../../components/Navbar'
 import { useContract } from '../../contexts/ContractContext'
 import { ethers } from 'ethers'
+import { ContractProvider } from '../../contexts/ContractContext'
 
 type InputProps = {
 	label: string
@@ -35,7 +36,7 @@ const Index = () => {
 	const [holderName, setHolderName] = useState('')
 	const [docType, setDocType] = useState('')
 	const [masterKey, setMasterKey] = useState('')
-	const { contract, connectedAddress } = useContract()
+	const { contract, connectedAddress, setContract } = useContract()
 
 	function uploadToIpfs() {
 		return;
@@ -56,8 +57,9 @@ const Index = () => {
 			console.log("Contract not found");
 		}
 		try {
-			const tx = await contract.issueDocument(_to, _URI, _issuer, _connectedAddress, _documentType);
-			await tx.wait();
+			console.log(contract);
+			const tx = await contract?.issueDocument(_to, _URI, _issuer, _connectedAddress, _documentType);
+			// await tx.wait();
 			console.log("NFT Issued Successfully");
 		} catch (error) {
 			console.log(error);
@@ -66,8 +68,8 @@ const Index = () => {
 	}
 
 	return (
-		<>
-			<Navbar />
+		<ContractProvider>
+			<Navbar contract={contract} setContract={setContract} />
 			<Container>
 				<FileDrop />
 				<Input
@@ -96,13 +98,13 @@ const Index = () => {
 							backgroundColor: '#4262FF',
 							textAlign: 'center',
 						}}
-						onClick={() => generateNft(ethAddress, "uri", "issuer", connectedAddress, docType)}
+						onClick={() => generateNft(ethAddress, "uri", "issuer", connectedAddress as string, docType)}
 					>
 						UPLOAD FILE
 					</Button>
 				</Group>
 			</Container>
-		</>
+		</ContractProvider>
 	)
 }
 
