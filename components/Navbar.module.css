@@ -1,0 +1,16 @@
+.header {
+	height: rem(56px);
+	margin-bottom: 1rem;
+	margin-top: 0.3rem;
+	background-color: var(--mantine-color-body);
+	border-bottom: rem(1px) solid
+		light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.inner {
+	height: rem(56px);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-weight: 800;
+}
