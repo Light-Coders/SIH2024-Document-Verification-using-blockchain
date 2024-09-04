@@ -2,6 +2,8 @@ import FileDrop from '../../components/FileDrop'
 import { Button, Container, Group, TextInput } from '@mantine/core'
 import React, { Dispatch, SetStateAction, useState } from 'react'
 import Navbar from '../../components/Navbar'
+import { useContract } from '../../contexts/ContractContext'
+import { ethers } from 'ethers'
 
 type InputProps = {
 	label: string
@@ -33,6 +35,35 @@ const Index = () => {
 	const [holderName, setHolderName] = useState('')
 	const [docType, setDocType] = useState('')
 	const [masterKey, setMasterKey] = useState('')
+	const { contract, connectedAddress } = useContract()
+
+	function uploadToIpfs() {
+		return;
+	}
+
+	function uploadMetadataToIpfs() {
+		return;
+	}
+
+	async function generateNft(
+		_to: string,
+		_URI: string,
+		_issuer: string,
+		_connectedAddress: string,
+		_documentType: string,
+	) {
+		if (!contract) {
+			console.log("Contract not found");
+		}
+		try {
+			const tx = await contract.issueDocument(_to, _URI, _issuer, _connectedAddress, _documentType);
+			await tx.wait();
+			console.log("NFT Issued Successfully");
+		} catch (error) {
+			console.log(error);
+		}
+
+	}
 
 	return (
 		<>
@@ -65,6 +96,7 @@ const Index = () => {
 							backgroundColor: '#4262FF',
 							textAlign: 'center',
 						}}
+						onClick={() => generateNft(ethAddress, "uri", "issuer", connectedAddress, docType)}
 					>
 						UPLOAD FILE
 					</Button>

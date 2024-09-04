@@ -9,14 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@coinbase/wallet-sdk": "^4.0.4",
+    "@ethersproject/providers": "^5.7.2",
     "@mantine/charts": "^7.12.2",
     "@mantine/core": "^7.12.2",
     "@mantine/dropzone": "^7.12.2",
     "@mantine/hooks": "^7.12.2",
     "@tabler/icons-react": "^3.14.0",
-    "next": "13.2.3",
+    "ethers": "^6.13.2",
+    "next": "^13.2.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "web3modal": "^1.9.12"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",

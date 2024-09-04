@@ -2,48 +2,60 @@ import { Container, Group, Burger, Button } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import classes from './Navbar.module.css'
 import { useRouter } from 'next/router'
-import Wallet from '../components/Wallet'
-import { useMetamask } from '../hooks/useMetamask'
-import { useListen } from '../hooks/useListen'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import Web3Modal from 'web3modal'
+import { ethers } from 'ethers'
+import { Web3Provider } from "@ethersproject/providers"
+import { useContract } from '../contexts/ContractContext'
+
+const providerOptions = {
+	// Add any additional wallet options here
+}
 
 export default function Navbar() {
 	const [opened, { toggle }] = useDisclosure(false)
 	const router = useRouter()
-	const { dispatch } = useMetamask()
-	const listen = useListen()
+	const [web3Modal, setWeb3Modal] = useState<Web3Modal | null>(null)
+	const [address, setAddress] = useState<string | null>(null)
+	const [isConnecting, setIsConnecting] = useState(false)
+	const { setContract } = useContract()
 
 	useEffect(() => {
-		if (typeof window !== undefined) {
-			// start by checking if window.ethereum is present, indicating a wallet extension
-			const ethereumProviderInjected =
-				typeof window.ethereum !== 'undefined'
-			// this could be other wallets so we can verify if we are dealing with metamask
-			// using the boolean constructor to be explecit and not let this be used as a falsy value (optional)
-			const isMetamaskInstalled =
-				ethereumProviderInjected && Boolean(window.ethereum.isMetaMask)
-
-			const local = window.localStorage.getItem('metamaskState')
-
-			// user was previously connected, start listening to MM
-			if (local) {
-				listen()
-			}
-
-			// local could be null if not present in LocalStorage
-			const { wallet, balance } = local
-				? JSON.parse(local)
-				: // backup if local storage is empty
-				  { wallet: null, balance: null }
-
-			dispatch({
-				type: 'pageLoaded',
-				isMetamaskInstalled,
-				wallet,
-				balance,
-			})
-		}
+		const modal = new Web3Modal({
+			network: "mainnet", // or your preferred network
+			cacheProvider: true,
+			providerOptions
+		})
+		setWeb3Modal(modal)
 	}, [])
+
+	const connectWallet = async () => {
+		if (!web3Modal) return
+		setIsConnecting(true)
+		try {
+			const instance = await web3Modal.connect()
+			const provider = new Web3Provider(instance)
+			const signer = provider.getSigner()
+			const address = await signer.getAddress()
+			setAddress(address)
+
+			// Set up contract here if needed
+			// const contractAddress = "YOUR_CONTRACT_ADDRESS"
+			// const abi = // Your contract ABI
+			// const contract = new ethers.Contract(contractAddress, abi, signer)
+			// setContract(contract)
+		} catch (error) {
+			console.error(error)
+		}
+		setIsConnecting(false)
+	}
+
+	const disconnectWallet = async () => {
+		if (!web3Modal) return
+		await web3Modal.clearCachedProvider()
+		setAddress(null)
+		setContract(null)
+	}
 
 	return (
 		<header className={classes.header}>
@@ -57,7 +69,31 @@ export default function Navbar() {
 				</Button>
 
 				<Group gap={5} visibleFrom="xs">
-					<Wallet />
+					{address ? (
+						<div className="px-4 py-5 sm:px-6">
+							<h3 className="text-lg font-medium leading-6 text-white">
+								Address:{' '}
+								<span>
+									{address.substring(0, 6)}...
+									{address.substring(address.length - 4)}
+								</span>
+							</h3>
+							<Button
+								onClick={disconnectWallet}
+								className="mt-8 inline-flex w-full items-center justify-center rounded-md border border-transparent bg-ganache text-white px-5 py-3 text-base font-medium sm:w-auto"
+							>
+								Disconnect
+							</Button>
+						</div>
+					) : (
+						<Button
+							onClick={connectWallet}
+							style={{ backgroundColor: '#4262FF' }}
+							disabled={isConnecting}
+						>
+							{isConnecting ? 'Connecting...' : 'Connect Wallet'}
+						</Button>
+					)}
 				</Group>
 				<Burger
 					opened={opened}
