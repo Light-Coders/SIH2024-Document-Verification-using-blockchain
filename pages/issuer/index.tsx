@@ -36,7 +36,9 @@ const Index = () => {
 	const [holderName, setHolderName] = useState('')
 	const [docType, setDocType] = useState('')
 	const [masterKey, setMasterKey] = useState('')
-	const { contract, connectedAddress, setContract } = useContract()
+	const { contract, connectedAddress } = useContract()
+
+	console.log("asdf", contract)
 
 	function uploadToIpfs() {
 		return;
@@ -53,23 +55,41 @@ const Index = () => {
 		_connectedAddress: string,
 		_documentType: string,
 	) {
-		if (!contract) {
-			console.log("Contract not found");
-		}
+
+
 		try {
 			console.log(contract);
+
+			if (!contract) {
+				console.log("Contract not found");
+				return;
+			}
 			const tx = await contract?.issueDocument(_to, _URI, _issuer, _connectedAddress, _documentType);
-			// await tx.wait();
-			console.log("NFT Issued Successfully");
+			//await tx.wait();
+			console.log("NFT Issued Successfully", tx);
 		} catch (error) {
 			console.log(error);
 		}
+	}
 
+	async function makeJsonFile() { // function takes all the inputs and makes a json file
+		const jsonData = {
+			ethAddress: ethAddress,
+			holderName: holderName,
+			docType: docType,
+			masterKey: masterKey,
+		};
+		const jsonString = JSON.stringify(jsonData);
+		fs.writeFileSync('metadata.json', jsonString);
+	}
+
+	async function uploadMetadataToIpfs() {	  // uploads metadata file to json and returns the URI of that json file
+		return;
 	}
 
 	return (
-		<ContractProvider>
-			<Navbar contract={contract} setContract={setContract} />
+		<>
+			<Navbar />
 			<Container>
 				<FileDrop />
 				<Input
@@ -98,13 +118,13 @@ const Index = () => {
 							backgroundColor: '#4262FF',
 							textAlign: 'center',
 						}}
-						onClick={() => generateNft(ethAddress, "uri", "issuer", connectedAddress as string, docType)}
+						onClick={async () => await generateNft(ethAddress, "uri", "issuer", connectedAddress as string, docType)}
 					>
 						UPLOAD FILE
 					</Button>
 				</Group>
 			</Container>
-		</ContractProvider>
+		</>
 	)
 }
 

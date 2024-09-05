@@ -4,10 +4,11 @@ import classes from './Navbar.module.css'
 import { useRouter } from 'next/router'
 import { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import Web3Modal from 'web3modal'
-import { ethers } from 'ethers'
+import { ethers, Contract } from 'ethers'
 import { Web3Provider } from "@ethersproject/providers"
 import { useContract } from '../contexts/ContractContext'
 import CoinbaseWalletSDK from '@coinbase/wallet-sdk';
+import abi from '../abis/abi.json';
 
 const providerOptions = {
 	walletlink: {
@@ -19,67 +20,69 @@ const providerOptions = {
 	}
 };
 
-type NavbarProps = {
-	contract: ethers.Co
-}
-
-export default function Navbar({ contract, setContract }) {
+export default function Navbar() {
 	const [opened, { toggle }] = useDisclosure(false)
 	const router = useRouter()
-	const [web3Modal, setWeb3Modal] = useState<Web3Modal | null>(null)
-	const [address, setAddress] = useState<string | null>(null)
-	const [isConnecting, setIsConnecting] = useState(false)
 
-	const [provider, setProvider] = useState<Web3Provider | null>(null);
-	const [signer, setSigner] = useState<ethers.Signer | null>(null);
-	const [connected, setConnected] = useState(false);
-	const [connectedAddress, setConnectedAddress] = useState('');
+	// const [connected, setConnected] = useState(false);
+	// const [connectedAddress, setConnectedAddress] = useState('');
 	const [loading, setLoading] = useState(false);
+	const { contract, connectWallet, disconnectWallet, connectedAddress, connected } = useContract()
 
 	const contractAddress = "0x058494E08CD9ED411025D83E7Bc94B3a8b9FFec6";
 
-	useEffect(() => {
-		if (signer && contractAddress) {
-			import('../abis/abi.json').then((abiModule) => {
-				const Contract = new ethers.Contract(contractAddress, abiModule.default, signer);
-				setContract(Contract);
-			});
-		}
-	}, [signer]);
+	// useEffect(() => {
+	// 	if (signer && contractAddress) {
+	// 		import('../abis/abi.json').then((abiModule) => {
+	// 			const Contract = new ethers.Contract(contractAddress, abiModule.default, signer);
+	// 			setContract(Contract);
+	// 			console.log("Contract:", Contract);
+	// 		});
+	// 	}
+	// }, []);
 
-	useEffect(() => {
-		console.log("Updated contract state:", contract);
-	}, [contract]);
+	// useEffect(() => {
+	// 	console.log("Updated contract state:", contract);
+	// 	if (setContract && contract) {
+	// 		setContract(contract);
+	// 	}
+	// }, [signer])
 
-	const connectWallet = async () => {
-		setLoading(true);
-		try {
-			const web3Modal = new Web3Modal({
-				cacheProvider: false,
-				providerOptions,
-			});
-			const web3ModalInstance = await web3Modal.connect();
-			const web3ModalProvider = new Web3Provider(web3ModalInstance);
-			const signer = web3ModalProvider.getSigner();
-			setProvider(web3ModalProvider);
-			setSigner(signer as any);
-			setConnected(true);
-			const address = await signer.getAddress();
-			setConnectedAddress(address);
-			setAddress(address); // Add this line
-		} catch (error) {
-			console.error("Failed to connect wallet:", error);
-		}
-		setLoading(false);
-	}
+	// const connectWallet = async () => {
+	// 	setLoading(true);
+	// 	try {
+	// 		const web3Modal = new Web3Modal({
+	// 			cacheProvider: false,
+	// 			providerOptions,
+	// 		});
+	// 		const web3ModalInstance = await web3Modal.connect();
+	// 		const web3ModalProvider = new Web3Provider(web3ModalInstance);
+	// 		const signer = web3ModalProvider.getSigner();
+	// 		setProvider(web3ModalProvider);
+	// 		setSigner(signer as any);
+	// 		setConnected(true);
+	// 		const address = await signer.getAddress();
+	// 		setConnectedAddress(address);
+	// 		setAddress(address); // Add this line
+	// 		console.log("Connected address:", address);
+	// 		console.log("signer: ", signer);
+	// 		const contract = new Contract(contractAddress, abi, signer as signer);
 
-	const disconnectWallet = async () => {
-		setProvider(null);
-		setSigner(null);
-		setConnected(false);
-		setConnectedAddress('');
-		setContract(null);
-	}
+	// 	} catch (error) {
+	// 		console.error("Failed to connect wallet:", error);
+	// 	}
+	// 	setLoading(false);
+	// }
+
+	// const disconnectWallet = async () => {
+	// 	if (setContract) {
+	// 		setProvider(null);
+	// 		setSigner(null);
+	// 		setConnected(false);
+	// 		setConnectedAddress('');
+	// 		setContract(null);
+	// 	}
+	// }
 
 	return (
 		<header className={classes.header}>
@@ -98,8 +101,8 @@ export default function Navbar({ contract, setContract }) {
 							<h3 className="text-lg font-medium leading-6 text-white">
 								Address:{' '}
 								<span>
-									{connectedAddress.substring(0, 6)}...
-									{connectedAddress.substring(connectedAddress.length - 4)}
+									{connectedAddress?.substring(0, 6)}...
+									{connectedAddress?.substring(connectedAddress.length - 4)}
 								</span>
 							</h3>
 							<Button

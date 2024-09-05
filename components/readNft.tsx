@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import ERC721_ABI from "../abis/erc721ABI.json";
 
 async function fetchNFTsByAddress(
-    provider: ethers.providers.Provider,
+    provider: ethers.Provider,
     contractAddress: string,
     userAddress: string
 ) {
